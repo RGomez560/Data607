@@ -1,0 +1,43 @@
+---
+title: "CDC Diabetes Health Indicators"
+author: "Robert Gomez"
+format: html
+editor: visual
+---
+
+# Approach
+
+## Introduction
+
+Explore CDC BRFSS survey data on lifestyle behaviors collected from a random sample of the U.S. general population in 2015. I plan to use the R rio package to import the dataset from my 607 GitHub repository and then apply dplyr to restructure the data in preparation for exploratory analysis.
+
+## Data Source
+
+https://archive.ics.uci.edu/dataset/891/cdc+diabetes+health+indicators
+
+## Loading packages
+
+```{r}
+pacman::p_load( rio,
+                dplyr )
+```
+
+## Import Data
+
+```{r}
+brfss2015 <- import("https://raw.githubusercontent.com/RGomez560/Data607/refs/heads/main/diabetes_012_health_indicators_BRFSS2015.csv")
+```
+
+## Transform Data
+
+```{r}
+brfss2015v2 <- brfss2015 %>%
+  rename(DiabetesStatus = Diabetes_012) %>%
+  select(DiabetesStatus, BMI)
+```
+
+## Explore Data
+
+```{r}
+str(brfss2015v2)
+```
