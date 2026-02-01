@@ -13,13 +13,16 @@ Explore CDC BRFSS survey data on lifestyle behaviors collected from a random sam
 
 ## Data Source
 
-https://archive.ics.uci.edu/dataset/891/cdc+diabetes+health+indicators
+<https://archive.ics.uci.edu/dataset/891/cdc+diabetes+health+indicators>
 
 ## Loading packages
 
 ```{r}
-pacman::p_load( rio,
-                dplyr )
+pacman::p_load( rio,          # Importing data
+                dplyr,        # managing and transforming data
+                summarytools, # summarizing data
+                tidyverse     # Visualizing data
+                )
 ```
 
 ## Import Data
@@ -33,11 +36,38 @@ brfss2015 <- import("https://raw.githubusercontent.com/RGomez560/Data607/refs/he
 ```{r}
 brfss2015v2 <- brfss2015 %>%
   rename(DiabetesStatus = Diabetes_012) %>%
-  select(DiabetesStatus, BMI)
+  select(DiabetesStatus, BMI) %>%
+  mutate(
+    DiabetesStatus = recode(
+      DiabetesStatus,
+      "0" = "No Diabetes",
+      "1" = "Pre Diabetes",
+      "2" = "Yes Diabetes"
+    )
+  )
 ```
 
 ## Explore Data
 
+Data structure
+
 ```{r}
 str(brfss2015v2)
+```
+
+Data frequencies
+
+```{r}
+brfss2015v2 %>%
+  freq(round.digits = 2, cumul = FALSE, report.nas = FALSE)
+```
+
+Data frequencies visuals
+
+```{r}
+ggplot(brfss2015v2, aes(x = DiabetesStatus, fill = DiabetesStatus)) +
+  geom_bar() +
+  scale_fill_hue(c = 40) +
+  theme(legend.position = "none") +
+  labs(x = "Diabetes Status", y = "Count")
 ```
