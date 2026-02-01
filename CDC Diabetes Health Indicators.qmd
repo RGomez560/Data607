@@ -19,9 +19,8 @@ Explore CDC BRFSS survey data on lifestyle behaviors collected from a random sam
 
 ```{r}
 pacman::p_load( rio,          # Importing data
-                dplyr,        # managing and transforming data
-                summarytools, # summarizing data
-                tidyverse     # Visualizing data
+                tidyverse,    # dplyr and ggplot2
+                summarytools  # summarizing data
                 )
 ```
 
