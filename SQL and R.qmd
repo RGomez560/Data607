@@ -1,0 +1,106 @@
+---
+title: "SQL and R"
+author: "Robert Gomez"
+format: html
+---
+
+# Approach
+
+## Introduction
+
+I will use Microsoft Forms to develop a survey and collect artificial data from five family members, who will rate six recent movies (Avatar: Fire and Ash, Greenland 2, Nuremberg, Predator: Badlands, Rental Family, and Zootopia 2) using a six-point star rating scale. I will then use a PostgreSQL environment to create a table and import the CSV file to store the data in a database. Finally, I will use R to query the SQL database directly and explore the data.
+
+## Challenges
+This will be the first time I am using PostgreSQL so I am hoping that it won't be too challenging. Also it has been a while since I used SQL so I will need to refresh my memory.
+
+# Base Code
+
+## Data Collection
+
+Microsoft Form was used for data collection.
+
+<https://forms.office.com/Pages/ResponsePage.aspx?id=NE0EUssEpEGgzVSubu_7nz3KM1PjdOpImgXM7fzocgVUMzA0OE40R1Y2NUlIREIzN0hPRExCNVJWSS4u>
+
+![MS Forms Survey](MS%20Form.jpg){fig-align="left" width="531"}
+
+## Data Storage
+
+Used SQL in PostgreSQL environment to create a table and import data collected using the Microsoft Form.
+
+CREATE TABLE movieratings (Num int,
+
+Fname varchar(15),
+
+Avatar_FireandAsh varchar(15),
+
+Greenland2 varchar(15),
+
+Nuremberg varchar(15),
+
+PredatorBadlands varchar(15),
+
+RentalFamily varchar(15),
+
+Zootopia2 varchar(15)
+
+);
+
+![Data Import Screen](Import%20Screen.jpg){fig-align="left" width="530"}
+
+## Data Analysis
+
+Loading packages
+```{r}
+pacman::p_load(DBI,
+               RPostgreSQL,
+               dbplyr,
+               tidyverse,
+               summarytools
+                )
+```
+
+Connecting to Database and Extracting Data
+
+```{r}
+keyring::key_set("postgresql_pw")
+
+con <- DBI::dbConnect(
+  RPostgres::Postgres(),
+  host = "localhost",
+  port = 5432,
+  dbname = "postgres",
+  user = "postgres",
+  password = keyring::key_get("postgresql_pw")
+)
+
+dbListTables(con)
+
+movieratings <- dbReadTable(con, "movieratings")
+
+dbDisconnect(con)
+
+```
+
+transforming and Exploring Movie Ratings
+
+```{r}
+str(movieratings)
+
+movieratings_long <- movieratings %>%
+  pivot_longer(cols = c("avatar_fireandash", "greenland2", "nuremberg", "predatorbadlands",
+                        "rentalfamily", "zootopia2"),
+               names_to = "movie",
+               values_to = "rating")
+
+print(ctable(x = movieratings_long$fname,
+       y = movieratings_long$rating,
+       prop = "r",
+       dnn = c("Rater", "Rating")), quote = FALSE, method = "render")
+
+print(ctable(x = movieratings_long$movie,
+       y = movieratings_long$rating,
+       prop = "r",
+       dnn = c("Movie", "Rating")), method = "render")
+```
+
+
