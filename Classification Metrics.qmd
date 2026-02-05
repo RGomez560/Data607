@@ -1,0 +1,22 @@
+---
+title: "Classification Metrics"
+author: "Robert Gomez"
+format: html
+---
+
+# Approach
+
+## Introduction
+
+Review the provided materials in order to develop a machine learning classification model and then develop metrics in order to evaluate the model.
+
+## Challenges
+
+This will be my first time developing an ML classification model and metrics for the model but I have developed other kinds of models in the past so I hope that it is not too complicated.
+
+# Base Code
+
+```{r}
+
+```
+
