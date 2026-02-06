@@ -21,6 +21,41 @@ ul.task-list li input[type="checkbox"] {
   margin: 0 0.8em 0.2em -1em; /* quarto-specific, see https://github.com/quarto-dev/quarto-cli/issues/4556 */ 
   vertical-align: middle;
 }
+/* CSS for syntax highlighting */
+html { -webkit-text-size-adjust: 100%; }
+pre > code.sourceCode { white-space: pre; position: relative; }
+pre > code.sourceCode > span { display: inline-block; line-height: 1.25; }
+pre > code.sourceCode > span:empty { height: 1.2em; }
+.sourceCode { overflow: visible; }
+code.sourceCode > span { color: inherit; text-decoration: inherit; }
+div.sourceCode { margin: 1em 0; }
+pre.sourceCode { margin: 0; }
+@media screen {
+div.sourceCode { overflow: auto; }
+}
+@media print {
+pre > code.sourceCode { white-space: pre-wrap; }
+pre > code.sourceCode > span { text-indent: -5em; padding-left: 5em; }
+}
+pre.numberSource code
+  { counter-reset: source-line 0; }
+pre.numberSource code > span
+  { position: relative; left: -4em; counter-increment: source-line; }
+pre.numberSource code > span > a:first-child::before
+  { content: counter(source-line);
+    position: relative; left: -1em; text-align: right; vertical-align: baseline;
+    border: none; display: inline-block;
+    -webkit-touch-callout: none; -webkit-user-select: none;
+    -khtml-user-select: none; -moz-user-select: none;
+    -ms-user-select: none; user-select: none;
+    padding: 0 4px; width: 4em;
+  }
+pre.numberSource { margin-left: 3em;  padding-left: 4px; }
+div.sourceCode
+  {   }
+@media screen {
+pre > code.sourceCode > span > a:first-child::before { text-decoration: underline; }
+}
 </style>
 
 
@@ -83,6 +118,259 @@ ul.task-list li input[type="checkbox"] {
 </section>
 <section id="base-code" class="level1">
 <h1>Base Code</h1>
+<section id="loading-packages" class="level2">
+<h2 class="anchored" data-anchor-id="loading-packages">Loading packages</h2>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb1"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a>pacman<span class="sc">::</span><span class="fu">p_load</span>( rio,          <span class="co"># Importing data</span></span>
+<span id="cb1-2"><a href="#cb1-2" aria-hidden="true" tabindex="-1"></a>                tidyverse,    <span class="co"># dplyr and ggplot2</span></span>
+<span id="cb1-3"><a href="#cb1-3" aria-hidden="true" tabindex="-1"></a>                summarytools  <span class="co"># summarizing data</span></span>
+<span id="cb1-4"><a href="#cb1-4" aria-hidden="true" tabindex="-1"></a>                )</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+</section>
+<section id="import-data" class="level2">
+<h2 class="anchored" data-anchor-id="import-data">Import Data</h2>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb2"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a>penguin <span class="ot">&lt;-</span> <span class="fu">import</span>(<span class="st">"https://raw.githubusercontent.com/acatlin/data/refs/heads/master/penguin_predictions.csv"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+</section>
+<section id="step-1-explore-data" class="level2">
+<h2 class="anchored" data-anchor-id="step-1-explore-data">Step 1: Explore Data</h2>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb3"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb3-1"><a href="#cb3-1" aria-hidden="true" tabindex="-1"></a><span class="fu">freq</span>(penguin<span class="sc">$</span>sex, <span class="at">round.digits =</span> <span class="dv">2</span>, <span class="at">cumul =</span> <span class="cn">FALSE</span>, <span class="at">report.nas =</span> <span class="cn">FALSE</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>Frequencies  
+penguin$sex  
+Type: Character  
+
+               Freq        %
+------------ ------ --------
+      female     39    41.94
+        male     54    58.06
+       Total     93   100.00</code></pre>
+</div>
+<div class="sourceCode cell-code" id="cb5"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb5-1"><a href="#cb5-1" aria-hidden="true" tabindex="-1"></a><span class="fu">freq</span>(penguin<span class="sc">$</span>.pred_class, <span class="at">round.digits =</span> <span class="dv">2</span>, <span class="at">cumul =</span> <span class="cn">FALSE</span>, <span class="at">report.nas =</span> <span class="cn">FALSE</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>Frequencies  
+penguin$.pred_class  
+Type: Character  
+
+               Freq        %
+------------ ------ --------
+      female     39    41.94
+        male     54    58.06
+       Total     93   100.00</code></pre>
+</div>
+</div>
+</section>
+<section id="plotting-class-distribution" class="level2">
+<h2 class="anchored" data-anchor-id="plotting-class-distribution">Plotting Class Distribution</h2>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb7"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb7-1"><a href="#cb7-1" aria-hidden="true" tabindex="-1"></a><span class="fu">ggplot</span>(penguin, <span class="fu">aes</span>(<span class="at">x =</span> sex, <span class="at">fill =</span> sex)) <span class="sc">+</span></span>
+<span id="cb7-2"><a href="#cb7-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">geom_bar</span>() <span class="sc">+</span></span>
+<span id="cb7-3"><a href="#cb7-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">scale_fill_hue</span>(<span class="at">c =</span> <span class="dv">40</span>) <span class="sc">+</span></span>
+<span id="cb7-4"><a href="#cb7-4" aria-hidden="true" tabindex="-1"></a>  <span class="fu">theme</span>(<span class="at">legend.position =</span> <span class="st">"none"</span>) <span class="sc">+</span></span>
+<span id="cb7-5"><a href="#cb7-5" aria-hidden="true" tabindex="-1"></a>  <span class="fu">labs</span>(<span class="at">x =</span> <span class="st">"Sex"</span>, <span class="at">y =</span> <span class="st">"Count"</span>,</span>
+<span id="cb7-6"><a href="#cb7-6" aria-hidden="true" tabindex="-1"></a>       <span class="at">title =</span> <span class="st">"Distribution of Class Variable (Target)"</span>) <span class="sc">+</span></span>
+<span id="cb7-7"><a href="#cb7-7" aria-hidden="true" tabindex="-1"></a>  <span class="fu">geom_text</span>(<span class="fu">aes</span>(<span class="at">label =</span> <span class="fu">paste0</span>(<span class="fu">after_stat</span>(count),<span class="st">"("</span>,<span class="fu">round</span>(<span class="fu">after_stat</span>(count)<span class="sc">*</span><span class="dv">100</span><span class="sc">/</span><span class="fu">nrow</span>(penguin)), <span class="st">"%)"</span>)), </span>
+<span id="cb7-8"><a href="#cb7-8" aria-hidden="true" tabindex="-1"></a>            <span class="at">stat =</span> <span class="st">"count"</span>, <span class="at">vjust =</span> <span class="sc">-</span><span class="fl">1.0</span>, <span class="at">colour =</span> <span class="st">"black"</span>) <span class="sc">+</span></span>
+<span id="cb7-9"><a href="#cb7-9" aria-hidden="true" tabindex="-1"></a>  <span class="fu">ylim</span>(<span class="dv">0</span>, <span class="dv">75</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output-display">
+<div>
+<figure class="figure">
+<p><img src="Classification-Metrics_files/figure-html/unnamed-chunk-4-1.png" class="img-fluid figure-img" width="672"></p>
+</figure>
+</div>
+</div>
+<div class="sourceCode cell-code" id="cb8"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb8-1"><a href="#cb8-1" aria-hidden="true" tabindex="-1"></a><span class="fu">ggplot</span>(penguin, <span class="fu">aes</span>(<span class="at">x =</span> .pred_class, <span class="at">fill =</span> .pred_class)) <span class="sc">+</span></span>
+<span id="cb8-2"><a href="#cb8-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">geom_bar</span>() <span class="sc">+</span></span>
+<span id="cb8-3"><a href="#cb8-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">scale_fill_hue</span>(<span class="at">c =</span> <span class="dv">40</span>) <span class="sc">+</span></span>
+<span id="cb8-4"><a href="#cb8-4" aria-hidden="true" tabindex="-1"></a>  <span class="fu">theme</span>(<span class="at">legend.position =</span> <span class="st">"none"</span>) <span class="sc">+</span></span>
+<span id="cb8-5"><a href="#cb8-5" aria-hidden="true" tabindex="-1"></a>  <span class="fu">labs</span>(<span class="at">x =</span> <span class="st">"Sex"</span>, <span class="at">y =</span> <span class="st">"Count"</span>,</span>
+<span id="cb8-6"><a href="#cb8-6" aria-hidden="true" tabindex="-1"></a>       <span class="at">title =</span> <span class="st">"Distribution of New Class Variable (Predicted)"</span>) <span class="sc">+</span></span>
+<span id="cb8-7"><a href="#cb8-7" aria-hidden="true" tabindex="-1"></a>  <span class="fu">geom_text</span>(<span class="fu">aes</span>(<span class="at">label =</span> <span class="fu">paste0</span>(<span class="fu">after_stat</span>(count),<span class="st">"("</span>,<span class="fu">round</span>(<span class="fu">after_stat</span>(count)<span class="sc">*</span><span class="dv">100</span><span class="sc">/</span><span class="fu">nrow</span>(penguin)), <span class="st">"%)"</span>)), </span>
+<span id="cb8-8"><a href="#cb8-8" aria-hidden="true" tabindex="-1"></a>            <span class="at">stat =</span> <span class="st">"count"</span>, <span class="at">vjust =</span> <span class="sc">-</span><span class="fl">1.0</span>, <span class="at">colour =</span> <span class="st">"black"</span>) <span class="sc">+</span></span>
+<span id="cb8-9"><a href="#cb8-9" aria-hidden="true" tabindex="-1"></a>  <span class="fu">ylim</span>(<span class="dv">0</span>, <span class="dv">75</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output-display">
+<div>
+<figure class="figure">
+<p><img src="Classification-Metrics_files/figure-html/unnamed-chunk-4-2.png" class="img-fluid figure-img" width="672"></p>
+</figure>
+</div>
+</div>
+</div>
+</section>
+<section id="step-2-understanding-probability-vs.-class" class="level2">
+<h2 class="anchored" data-anchor-id="step-2-understanding-probability-vs.-class">Step 2: Understanding Probability vs.&nbsp;Class</h2>
+<section id="recomputed-classification" class="level3">
+<h3 class="anchored" data-anchor-id="recomputed-classification">Recomputed Classification</h3>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb9"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb9-1"><a href="#cb9-1" aria-hidden="true" tabindex="-1"></a>penguin <span class="ot">&lt;-</span> penguin <span class="sc">%&gt;%</span></span>
+<span id="cb9-2"><a href="#cb9-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">mutate</span>(<span class="at">predicted02 =</span> <span class="fu">case_when</span>(.pred_female <span class="sc">&gt;</span> <span class="fl">0.2</span> <span class="sc">~</span> <span class="dv">1</span>,</span>
+<span id="cb9-3"><a href="#cb9-3" aria-hidden="true" tabindex="-1"></a>                                  <span class="cn">TRUE</span> <span class="sc">~</span> <span class="dv">0</span>),</span>
+<span id="cb9-4"><a href="#cb9-4" aria-hidden="true" tabindex="-1"></a>         <span class="at">predicted05 =</span> <span class="fu">case_when</span>(.pred_female <span class="sc">&gt;</span> <span class="fl">0.5</span> <span class="sc">~</span> <span class="dv">1</span>,</span>
+<span id="cb9-5"><a href="#cb9-5" aria-hidden="true" tabindex="-1"></a>                                  <span class="cn">TRUE</span> <span class="sc">~</span> <span class="dv">0</span>),</span>
+<span id="cb9-6"><a href="#cb9-6" aria-hidden="true" tabindex="-1"></a>         <span class="at">predicted08 =</span> <span class="fu">case_when</span>(.pred_female <span class="sc">&gt;</span> <span class="fl">0.8</span> <span class="sc">~</span> <span class="dv">1</span>,</span>
+<span id="cb9-7"><a href="#cb9-7" aria-hidden="true" tabindex="-1"></a>                                  <span class="cn">TRUE</span> <span class="sc">~</span> <span class="dv">0</span>),</span>
+<span id="cb9-8"><a href="#cb9-8" aria-hidden="true" tabindex="-1"></a>         <span class="at">actual =</span> <span class="fu">case_when</span>(sex <span class="sc">==</span> <span class="st">"female"</span> <span class="sc">~</span> <span class="dv">1</span>,</span>
+<span id="cb9-9"><a href="#cb9-9" aria-hidden="true" tabindex="-1"></a>                          <span class="cn">TRUE</span> <span class="sc">~</span> <span class="dv">0</span>)</span>
+<span id="cb9-10"><a href="#cb9-10" aria-hidden="true" tabindex="-1"></a>         )</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+</section>
+<section id="threshold-1-0.2" class="level3">
+<h3 class="anchored" data-anchor-id="threshold-1-0.2">Threshold 1 (0.2)</h3>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb10"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb10-1"><a href="#cb10-1" aria-hidden="true" tabindex="-1"></a>thresh1 <span class="ot">&lt;-</span> penguin <span class="sc">%&gt;%</span></span>
+<span id="cb10-2"><a href="#cb10-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">select</span>(predicted02, actual) <span class="sc">%&gt;%</span></span>
+<span id="cb10-3"><a href="#cb10-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">mutate</span>(<span class="at">mt =</span> <span class="fu">case_when</span>(predicted02 <span class="sc">==</span> <span class="dv">1</span> <span class="sc">&amp;</span> actual <span class="sc">==</span> <span class="dv">1</span> <span class="sc">~</span> <span class="st">"TP"</span>,</span>
+<span id="cb10-4"><a href="#cb10-4" aria-hidden="true" tabindex="-1"></a>                        predicted02 <span class="sc">==</span> <span class="dv">1</span> <span class="sc">&amp;</span> actual <span class="sc">==</span> <span class="dv">0</span> <span class="sc">~</span> <span class="st">"FP"</span>,</span>
+<span id="cb10-5"><a href="#cb10-5" aria-hidden="true" tabindex="-1"></a>                        predicted02 <span class="sc">==</span> <span class="dv">0</span> <span class="sc">&amp;</span> actual <span class="sc">==</span> <span class="dv">1</span> <span class="sc">~</span> <span class="st">"FN"</span>,</span>
+<span id="cb10-6"><a href="#cb10-6" aria-hidden="true" tabindex="-1"></a>                        predicted02 <span class="sc">==</span> <span class="dv">0</span> <span class="sc">&amp;</span> actual <span class="sc">==</span> <span class="dv">0</span> <span class="sc">~</span> <span class="st">"TN"</span>,</span>
+<span id="cb10-7"><a href="#cb10-7" aria-hidden="true" tabindex="-1"></a>                        <span class="cn">TRUE</span> <span class="sc">~</span> <span class="st">"Unknown"</span>)</span>
+<span id="cb10-8"><a href="#cb10-8" aria-hidden="true" tabindex="-1"></a>         )</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+</section>
+<section id="threshold-2-0.5" class="level3">
+<h3 class="anchored" data-anchor-id="threshold-2-0.5">Threshold 2 (0.5)</h3>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb11"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb11-1"><a href="#cb11-1" aria-hidden="true" tabindex="-1"></a>thresh2 <span class="ot">&lt;-</span> penguin <span class="sc">%&gt;%</span></span>
+<span id="cb11-2"><a href="#cb11-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">select</span>(predicted05, actual) <span class="sc">%&gt;%</span></span>
+<span id="cb11-3"><a href="#cb11-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">mutate</span>(<span class="at">mt =</span> <span class="fu">case_when</span>(predicted05 <span class="sc">==</span> <span class="dv">1</span> <span class="sc">&amp;</span> actual <span class="sc">==</span> <span class="dv">1</span> <span class="sc">~</span> <span class="st">"TP"</span>,</span>
+<span id="cb11-4"><a href="#cb11-4" aria-hidden="true" tabindex="-1"></a>                        predicted05 <span class="sc">==</span> <span class="dv">1</span> <span class="sc">&amp;</span> actual <span class="sc">==</span> <span class="dv">0</span> <span class="sc">~</span> <span class="st">"FP"</span>,</span>
+<span id="cb11-5"><a href="#cb11-5" aria-hidden="true" tabindex="-1"></a>                        predicted05 <span class="sc">==</span> <span class="dv">0</span> <span class="sc">&amp;</span> actual <span class="sc">==</span> <span class="dv">1</span> <span class="sc">~</span> <span class="st">"FN"</span>,</span>
+<span id="cb11-6"><a href="#cb11-6" aria-hidden="true" tabindex="-1"></a>                        predicted05 <span class="sc">==</span> <span class="dv">0</span> <span class="sc">&amp;</span> actual <span class="sc">==</span> <span class="dv">0</span> <span class="sc">~</span> <span class="st">"TN"</span>,</span>
+<span id="cb11-7"><a href="#cb11-7" aria-hidden="true" tabindex="-1"></a>                        <span class="cn">TRUE</span> <span class="sc">~</span> <span class="st">"Unknown"</span>)</span>
+<span id="cb11-8"><a href="#cb11-8" aria-hidden="true" tabindex="-1"></a>         )</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+</section>
+<section id="threshold-3-0.8" class="level3">
+<h3 class="anchored" data-anchor-id="threshold-3-0.8">Threshold 3 (0.8)</h3>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb12"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb12-1"><a href="#cb12-1" aria-hidden="true" tabindex="-1"></a>thresh3 <span class="ot">&lt;-</span> penguin <span class="sc">%&gt;%</span></span>
+<span id="cb12-2"><a href="#cb12-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">select</span>(predicted08, actual) <span class="sc">%&gt;%</span></span>
+<span id="cb12-3"><a href="#cb12-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">mutate</span>(<span class="at">mt =</span> <span class="fu">case_when</span>(predicted08 <span class="sc">==</span> <span class="dv">1</span> <span class="sc">&amp;</span> actual <span class="sc">==</span> <span class="dv">1</span> <span class="sc">~</span> <span class="st">"TP"</span>,</span>
+<span id="cb12-4"><a href="#cb12-4" aria-hidden="true" tabindex="-1"></a>                        predicted08 <span class="sc">==</span> <span class="dv">1</span> <span class="sc">&amp;</span> actual <span class="sc">==</span> <span class="dv">0</span> <span class="sc">~</span> <span class="st">"FP"</span>,</span>
+<span id="cb12-5"><a href="#cb12-5" aria-hidden="true" tabindex="-1"></a>                        predicted08 <span class="sc">==</span> <span class="dv">0</span> <span class="sc">&amp;</span> actual <span class="sc">==</span> <span class="dv">1</span> <span class="sc">~</span> <span class="st">"FN"</span>,</span>
+<span id="cb12-6"><a href="#cb12-6" aria-hidden="true" tabindex="-1"></a>                        predicted08 <span class="sc">==</span> <span class="dv">0</span> <span class="sc">&amp;</span> actual <span class="sc">==</span> <span class="dv">0</span> <span class="sc">~</span> <span class="st">"TN"</span>,</span>
+<span id="cb12-7"><a href="#cb12-7" aria-hidden="true" tabindex="-1"></a>                        <span class="cn">TRUE</span> <span class="sc">~</span> <span class="st">"Unknown"</span>)</span>
+<span id="cb12-8"><a href="#cb12-8" aria-hidden="true" tabindex="-1"></a>         )</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+</section>
+</section>
+<section id="step-3-building-confusion-matrices-manually" class="level2">
+<h2 class="anchored" data-anchor-id="step-3-building-confusion-matrices-manually">Step 3: Building Confusion Matrices Manually</h2>
+<section id="matrix-1-0.2" class="level3">
+<h3 class="anchored" data-anchor-id="matrix-1-0.2">Matrix 1 (0.2)</h3>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb13"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb13-1"><a href="#cb13-1" aria-hidden="true" tabindex="-1"></a>counts1 <span class="ot">&lt;-</span> thresh1 <span class="sc">%&gt;%</span></span>
+<span id="cb13-2"><a href="#cb13-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">count</span>(mt) <span class="sc">%&gt;%</span></span>
+<span id="cb13-3"><a href="#cb13-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">pivot_wider</span>(<span class="at">names_from =</span> mt, <span class="at">values_from =</span> n) <span class="sc">%&gt;%</span></span>
+<span id="cb13-4"><a href="#cb13-4" aria-hidden="true" tabindex="-1"></a>  <span class="fu">select</span>(TP, FP, FN, TN)</span>
+<span id="cb13-5"><a href="#cb13-5" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb13-6"><a href="#cb13-6" aria-hidden="true" tabindex="-1"></a>table1 <span class="ot">&lt;-</span> <span class="fu">matrix</span>(counts1, <span class="at">nrow =</span> <span class="dv">2</span>, <span class="at">ncol =</span> <span class="dv">2</span>,</span>
+<span id="cb13-7"><a href="#cb13-7" aria-hidden="true" tabindex="-1"></a>                 <span class="at">dimnames =</span> <span class="fu">list</span>(<span class="fu">c</span>(<span class="st">"Positives (1)"</span>, <span class="st">"Negatives (0)"</span>),<span class="fu">c</span>(<span class="st">"Positives (1)"</span>, <span class="st">"Negatives (0)"</span>))) <span class="sc">%&gt;%</span></span>
+<span id="cb13-8"><a href="#cb13-8" aria-hidden="true" tabindex="-1"></a>  <span class="fu">print</span>(<span class="at">method =</span> <span class="st">"render"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>              Positives (1) Negatives (0)
+Positives (1) 37            2            
+Negatives (0) 6             48           </code></pre>
+</div>
+</div>
+</section>
+<section id="matrix-2-0.2" class="level3">
+<h3 class="anchored" data-anchor-id="matrix-2-0.2">Matrix 2 (0.2)</h3>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb15"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb15-1"><a href="#cb15-1" aria-hidden="true" tabindex="-1"></a>counts2 <span class="ot">&lt;-</span> thresh2 <span class="sc">%&gt;%</span></span>
+<span id="cb15-2"><a href="#cb15-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">count</span>(mt) <span class="sc">%&gt;%</span></span>
+<span id="cb15-3"><a href="#cb15-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">pivot_wider</span>(<span class="at">names_from =</span> mt, <span class="at">values_from =</span> n) <span class="sc">%&gt;%</span></span>
+<span id="cb15-4"><a href="#cb15-4" aria-hidden="true" tabindex="-1"></a>  <span class="fu">select</span>(TP, FP, FN, TN)</span>
+<span id="cb15-5"><a href="#cb15-5" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb15-6"><a href="#cb15-6" aria-hidden="true" tabindex="-1"></a>table2 <span class="ot">&lt;-</span> <span class="fu">matrix</span>(counts2, <span class="at">nrow =</span> <span class="dv">2</span>, <span class="at">ncol =</span> <span class="dv">2</span>,</span>
+<span id="cb15-7"><a href="#cb15-7" aria-hidden="true" tabindex="-1"></a>                 <span class="at">dimnames =</span> <span class="fu">list</span>(<span class="fu">c</span>(<span class="st">"Positives (1)"</span>, <span class="st">"Negatives (0)"</span>),<span class="fu">c</span>(<span class="st">"Positives (1)"</span>, <span class="st">"Negatives (0)"</span>))) <span class="sc">%&gt;%</span></span>
+<span id="cb15-8"><a href="#cb15-8" aria-hidden="true" tabindex="-1"></a>  <span class="fu">print</span>(<span class="at">method =</span> <span class="st">"render"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>              Positives (1) Negatives (0)
+Positives (1) 36            3            
+Negatives (0) 3             51           </code></pre>
+</div>
+</div>
+</section>
+<section id="matrix-3-0.2" class="level3">
+<h3 class="anchored" data-anchor-id="matrix-3-0.2">Matrix 3 (0.2)</h3>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb17"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb17-1"><a href="#cb17-1" aria-hidden="true" tabindex="-1"></a>counts3 <span class="ot">&lt;-</span> thresh3 <span class="sc">%&gt;%</span></span>
+<span id="cb17-2"><a href="#cb17-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">count</span>(mt) <span class="sc">%&gt;%</span></span>
+<span id="cb17-3"><a href="#cb17-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">pivot_wider</span>(<span class="at">names_from =</span> mt, <span class="at">values_from =</span> n) <span class="sc">%&gt;%</span></span>
+<span id="cb17-4"><a href="#cb17-4" aria-hidden="true" tabindex="-1"></a>  <span class="fu">select</span>(TP, FP, FN, TN)</span>
+<span id="cb17-5"><a href="#cb17-5" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb17-6"><a href="#cb17-6" aria-hidden="true" tabindex="-1"></a>table3 <span class="ot">&lt;-</span> <span class="fu">matrix</span>(counts3, <span class="at">nrow =</span> <span class="dv">2</span>, <span class="at">ncol =</span> <span class="dv">2</span>,</span>
+<span id="cb17-7"><a href="#cb17-7" aria-hidden="true" tabindex="-1"></a>                 <span class="at">dimnames =</span> <span class="fu">list</span>(<span class="fu">c</span>(<span class="st">"Positives (1)"</span>, <span class="st">"Negatives (0)"</span>),<span class="fu">c</span>(<span class="st">"Positives (1)"</span>, <span class="st">"Negatives (0)"</span>))) <span class="sc">%&gt;%</span></span>
+<span id="cb17-8"><a href="#cb17-8" aria-hidden="true" tabindex="-1"></a>  <span class="fu">print</span>(<span class="at">method =</span> <span class="st">"render"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>              Positives (1) Negatives (0)
+Positives (1) 36            3            
+Negatives (0) 2             52           </code></pre>
+</div>
+</div>
+</section>
+</section>
+<section id="step-4-derive-metrics" class="level2">
+<h2 class="anchored" data-anchor-id="step-4-derive-metrics">Step 4: Derive Metrics</h2>
+<section id="matrix-1-0.2-1" class="level3">
+<h3 class="anchored" data-anchor-id="matrix-1-0.2-1">Matrix 1 (0.2)</h3>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb19"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb19-1"><a href="#cb19-1" aria-hidden="true" tabindex="-1"></a>metrics1 <span class="ot">=</span> counts1 <span class="sc">%&gt;%</span></span>
+<span id="cb19-2"><a href="#cb19-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">mutate</span>(<span class="at">Accuracy =</span> <span class="fu">round</span>((TP <span class="sc">+</span> TN) <span class="sc">/</span> (TP <span class="sc">+</span> FP <span class="sc">+</span> FN <span class="sc">+</span> TN), <span class="dv">3</span>),</span>
+<span id="cb19-3"><a href="#cb19-3" aria-hidden="true" tabindex="-1"></a>         <span class="at">Precision =</span> <span class="fu">round</span>(TP <span class="sc">/</span> (TP <span class="sc">+</span> FP), <span class="dv">3</span>),</span>
+<span id="cb19-4"><a href="#cb19-4" aria-hidden="true" tabindex="-1"></a>         <span class="at">Recall =</span> <span class="fu">round</span>(TP <span class="sc">/</span> (TP <span class="sc">+</span>FN), <span class="dv">3</span>),</span>
+<span id="cb19-5"><a href="#cb19-5" aria-hidden="true" tabindex="-1"></a>         <span class="at">F1_HMean =</span> <span class="fu">round</span>((<span class="dv">2</span> <span class="sc">*</span> Precision <span class="sc">*</span> Recall) <span class="sc">/</span> (Precision <span class="sc">+</span> Recall), <span class="dv">3</span>)) <span class="sc">%&gt;%</span></span>
+<span id="cb19-6"><a href="#cb19-6" aria-hidden="true" tabindex="-1"></a>  <span class="fu">select</span>(Accuracy, Precision, Recall, F1_HMean) <span class="sc">%&gt;%</span></span>
+<span id="cb19-7"><a href="#cb19-7" aria-hidden="true" tabindex="-1"></a>  <span class="fu">as.data.frame</span>() <span class="sc">%&gt;%</span></span>
+<span id="cb19-8"><a href="#cb19-8" aria-hidden="true" tabindex="-1"></a>  <span class="fu">print</span>(<span class="at">method =</span> <span class="st">"render"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>  Accuracy Precision Recall F1_HMean
+1    0.914      0.86  0.949    0.902</code></pre>
+</div>
+</div>
+</section>
+<section id="matrix-2-0.5" class="level3">
+<h3 class="anchored" data-anchor-id="matrix-2-0.5">Matrix 2 (0.5)</h3>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb21"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb21-1"><a href="#cb21-1" aria-hidden="true" tabindex="-1"></a>metrics2 <span class="ot">=</span> counts2 <span class="sc">%&gt;%</span></span>
+<span id="cb21-2"><a href="#cb21-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">mutate</span>(<span class="at">Accuracy =</span> <span class="fu">round</span>((TP <span class="sc">+</span> TN) <span class="sc">/</span> (TP <span class="sc">+</span> FP <span class="sc">+</span> FN <span class="sc">+</span> TN), <span class="dv">3</span>),</span>
+<span id="cb21-3"><a href="#cb21-3" aria-hidden="true" tabindex="-1"></a>         <span class="at">Precision =</span> <span class="fu">round</span>(TP <span class="sc">/</span> (TP <span class="sc">+</span> FP), <span class="dv">3</span>),</span>
+<span id="cb21-4"><a href="#cb21-4" aria-hidden="true" tabindex="-1"></a>         <span class="at">Recall =</span> <span class="fu">round</span>(TP <span class="sc">/</span> (TP <span class="sc">+</span>FN), <span class="dv">3</span>),</span>
+<span id="cb21-5"><a href="#cb21-5" aria-hidden="true" tabindex="-1"></a>         <span class="at">F1_HMean =</span> <span class="fu">round</span>((<span class="dv">2</span> <span class="sc">*</span> Precision <span class="sc">*</span> Recall) <span class="sc">/</span> (Precision <span class="sc">+</span> Recall), <span class="dv">3</span>)) <span class="sc">%&gt;%</span></span>
+<span id="cb21-6"><a href="#cb21-6" aria-hidden="true" tabindex="-1"></a>  <span class="fu">select</span>(Accuracy, Precision, Recall, F1_HMean) <span class="sc">%&gt;%</span></span>
+<span id="cb21-7"><a href="#cb21-7" aria-hidden="true" tabindex="-1"></a>  <span class="fu">as.data.frame</span>() <span class="sc">%&gt;%</span></span>
+<span id="cb21-8"><a href="#cb21-8" aria-hidden="true" tabindex="-1"></a>  <span class="fu">print</span>(<span class="at">method =</span> <span class="st">"render"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>  Accuracy Precision Recall F1_HMean
+1    0.935     0.923  0.923    0.923</code></pre>
+</div>
+</div>
+</section>
+<section id="matrix-3-0.8" class="level3">
+<h3 class="anchored" data-anchor-id="matrix-3-0.8">Matrix 3 (0.8)</h3>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb23"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb23-1"><a href="#cb23-1" aria-hidden="true" tabindex="-1"></a>metrics3 <span class="ot">=</span> counts3 <span class="sc">%&gt;%</span></span>
+<span id="cb23-2"><a href="#cb23-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">mutate</span>(<span class="at">Accuracy =</span> <span class="fu">round</span>((TP <span class="sc">+</span> TN) <span class="sc">/</span> (TP <span class="sc">+</span> FP <span class="sc">+</span> FN <span class="sc">+</span> TN), <span class="dv">3</span>),</span>
+<span id="cb23-3"><a href="#cb23-3" aria-hidden="true" tabindex="-1"></a>         <span class="at">Precision =</span> <span class="fu">round</span>(TP <span class="sc">/</span> (TP <span class="sc">+</span> FP), <span class="dv">3</span>),</span>
+<span id="cb23-4"><a href="#cb23-4" aria-hidden="true" tabindex="-1"></a>         <span class="at">Recall =</span> <span class="fu">round</span>(TP <span class="sc">/</span> (TP <span class="sc">+</span>FN), <span class="dv">3</span>),</span>
+<span id="cb23-5"><a href="#cb23-5" aria-hidden="true" tabindex="-1"></a>         <span class="at">F1_HMean =</span> <span class="fu">round</span>((<span class="dv">2</span> <span class="sc">*</span> Precision <span class="sc">*</span> Recall) <span class="sc">/</span> (Precision <span class="sc">+</span> Recall), <span class="dv">3</span>)) <span class="sc">%&gt;%</span></span>
+<span id="cb23-6"><a href="#cb23-6" aria-hidden="true" tabindex="-1"></a>  <span class="fu">select</span>(Accuracy, Precision, Recall, F1_HMean) <span class="sc">%&gt;%</span></span>
+<span id="cb23-7"><a href="#cb23-7" aria-hidden="true" tabindex="-1"></a>  <span class="fu">as.data.frame</span>() <span class="sc">%&gt;%</span></span>
+<span id="cb23-8"><a href="#cb23-8" aria-hidden="true" tabindex="-1"></a>  <span class="fu">print</span>(<span class="at">method =</span> <span class="st">"render"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>  Accuracy Precision Recall F1_HMean
+1    0.946     0.947  0.923    0.935</code></pre>
+</div>
+</div>
+</section>
+</section>
+<section id="step-5-threshold-use-cases" class="level2">
+<h2 class="anchored" data-anchor-id="step-5-threshold-use-cases">Step 5: Threshold Use Cases</h2>
+<p>We are addressing a classification problem that involves predicting whether an individual is pregnant, where 1 represents pregnant (female) and 0 represents not pregnant (male). Accurate prediction of pregnancy status is important, as incorrect classifications can lead to unnecessary stress and potential downstream consequences for individuals. Considering the target variable is relatively balanced, overall accuracy is a reasonable performance metric. Under both classification thresholds, the model performs well. At a 0.2 threshold, the model achieves 91% accuracy, compared to 95% accuracy at the 0.8 threshold. Precision increases from 86% at the 0.2 threshold to 95% at the 0.8 threshold, indicating that the higher threshold results in fewer false positives. However, recall is more critical in this context, as failing to identify a true pregnancy represents a more consequential error than incorrectly flagging a non-pregnancy. At the 0.2 threshold, the model correctly identifies 95% of pregnancies, compared to 92% at the 0.8 threshold. While this difference may appear modest, it reflects a higher rate of false negatives when using the higher threshold. Although the F1 score is higher at the 0.8 threshold (94% versus 90%), the 0.2 threshold is preferred given the nature of the prediction task. Prioritizing recall minimizes the likelihood of missing true pregnancies, even at the cost of a higher number of false positives. In this setting, the 0.2 threshold provides a more appropriate balance that aligns with the practical implications of the model’s use.</p>
+</section>
 </section>
 
 </main>

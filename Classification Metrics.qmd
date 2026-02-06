@@ -16,7 +16,188 @@ This will be my first time developing an ML classification model and metrics for
 
 # Base Code
 
+## Loading packages
+
 ```{r}
+pacman::p_load( rio,          # Importing data
+                tidyverse,    # dplyr and ggplot2
+                summarytools  # summarizing data
+                )
+```
+
+## Import Data
+
+```{r}
+penguin <- import("https://raw.githubusercontent.com/acatlin/data/refs/heads/master/penguin_predictions.csv")
+```
+
+## Step 1: Explore Data
+
+```{r}
+freq(penguin$sex, round.digits = 2, cumul = FALSE, report.nas = FALSE)
+
+freq(penguin$.pred_class, round.digits = 2, cumul = FALSE, report.nas = FALSE)
+```
+
+## Plotting Class Distribution
+
+```{r}
+ggplot(penguin, aes(x = sex, fill = sex)) +
+  geom_bar() +
+  scale_fill_hue(c = 40) +
+  theme(legend.position = "none") +
+  labs(x = "Sex", y = "Count",
+       title = "Distribution of Class Variable (Target)") +
+  geom_text(aes(label = paste0(after_stat(count),"(",round(after_stat(count)*100/nrow(penguin)), "%)")), 
+            stat = "count", vjust = -1.0, colour = "black") +
+  ylim(0, 75)
+
+ggplot(penguin, aes(x = .pred_class, fill = .pred_class)) +
+  geom_bar() +
+  scale_fill_hue(c = 40) +
+  theme(legend.position = "none") +
+  labs(x = "Sex", y = "Count",
+       title = "Distribution of New Class Variable (Predicted)") +
+  geom_text(aes(label = paste0(after_stat(count),"(",round(after_stat(count)*100/nrow(penguin)), "%)")), 
+            stat = "count", vjust = -1.0, colour = "black") +
+  ylim(0, 75)
+```
+
+## Step 2: Understanding Probability vs. Class
+
+### Recomputed Classification
+
+```{r}
+penguin <- penguin %>%
+  mutate(predicted02 = case_when(.pred_female > 0.2 ~ 1,
+                                  TRUE ~ 0),
+         predicted05 = case_when(.pred_female > 0.5 ~ 1,
+                                  TRUE ~ 0),
+         predicted08 = case_when(.pred_female > 0.8 ~ 1,
+                                  TRUE ~ 0),
+         actual = case_when(sex == "female" ~ 1,
+                          TRUE ~ 0)
+         )
+```
+
+### Threshold 1 (0.2)
+
+```{r}
+thresh1 <- penguin %>%
+  select(predicted02, actual) %>%
+  mutate(mt = case_when(predicted02 == 1 & actual == 1 ~ "TP",
+                        predicted02 == 1 & actual == 0 ~ "FP",
+                        predicted02 == 0 & actual == 1 ~ "FN",
+                        predicted02 == 0 & actual == 0 ~ "TN",
+                        TRUE ~ "Unknown")
+         )
+```
+
+### Threshold 2 (0.5)
+
+```{r}
+thresh2 <- penguin %>%
+  select(predicted05, actual) %>%
+  mutate(mt = case_when(predicted05 == 1 & actual == 1 ~ "TP",
+                        predicted05 == 1 & actual == 0 ~ "FP",
+                        predicted05 == 0 & actual == 1 ~ "FN",
+                        predicted05 == 0 & actual == 0 ~ "TN",
+                        TRUE ~ "Unknown")
+         )
+```
+
+### Threshold 3 (0.8)
+
+```{r}
+thresh3 <- penguin %>%
+  select(predicted08, actual) %>%
+  mutate(mt = case_when(predicted08 == 1 & actual == 1 ~ "TP",
+                        predicted08 == 1 & actual == 0 ~ "FP",
+                        predicted08 == 0 & actual == 1 ~ "FN",
+                        predicted08 == 0 & actual == 0 ~ "TN",
+                        TRUE ~ "Unknown")
+         )
+```
+
+## Step 3: Building Confusion Matrices Manually
+
+### Matrix 1 (0.2)
+```{r}
+counts1 <- thresh1 %>%
+  count(mt) %>%
+  pivot_wider(names_from = mt, values_from = n) %>%
+  select(TP, FP, FN, TN)
+
+table1 <- matrix(counts1, nrow = 2, ncol = 2,
+                 dimnames = list(c("Positives (1)", "Negatives (0)"),c("Positives (1)", "Negatives (0)"))) %>%
+  print(method = "render")
+```
+
+### Matrix 2 (0.2)
+```{r}
+counts2 <- thresh2 %>%
+  count(mt) %>%
+  pivot_wider(names_from = mt, values_from = n) %>%
+  select(TP, FP, FN, TN)
+
+table2 <- matrix(counts2, nrow = 2, ncol = 2,
+                 dimnames = list(c("Positives (1)", "Negatives (0)"),c("Positives (1)", "Negatives (0)"))) %>%
+  print(method = "render")
+```
+
+### Matrix 3 (0.2)
+```{r}
+counts3 <- thresh3 %>%
+  count(mt) %>%
+  pivot_wider(names_from = mt, values_from = n) %>%
+  select(TP, FP, FN, TN)
+
+table3 <- matrix(counts3, nrow = 2, ncol = 2,
+                 dimnames = list(c("Positives (1)", "Negatives (0)"),c("Positives (1)", "Negatives (0)"))) %>%
+  print(method = "render")
 
 ```
+
+## Step 4: Derive Metrics
+
+### Matrix 1 (0.2)
+```{r}
+metrics1 = counts1 %>%
+  mutate(Accuracy = round((TP + TN) / (TP + FP + FN + TN), 3),
+         Precision = round(TP / (TP + FP), 3),
+         Recall = round(TP / (TP +FN), 3),
+         F1_HMean = round((2 * Precision * Recall) / (Precision + Recall), 3)) %>%
+  select(Accuracy, Precision, Recall, F1_HMean) %>%
+  as.data.frame() %>%
+  print(method = "render")
+```
+
+### Matrix 2 (0.5)
+```{r}
+metrics2 = counts2 %>%
+  mutate(Accuracy = round((TP + TN) / (TP + FP + FN + TN), 3),
+         Precision = round(TP / (TP + FP), 3),
+         Recall = round(TP / (TP +FN), 3),
+         F1_HMean = round((2 * Precision * Recall) / (Precision + Recall), 3)) %>%
+  select(Accuracy, Precision, Recall, F1_HMean) %>%
+  as.data.frame() %>%
+  print(method = "render")
+```
+
+### Matrix 3 (0.8)
+```{r}
+metrics3 = counts3 %>%
+  mutate(Accuracy = round((TP + TN) / (TP + FP + FN + TN), 3),
+         Precision = round(TP / (TP + FP), 3),
+         Recall = round(TP / (TP +FN), 3),
+         F1_HMean = round((2 * Precision * Recall) / (Precision + Recall), 3)) %>%
+  select(Accuracy, Precision, Recall, F1_HMean) %>%
+  as.data.frame() %>%
+  print(method = "render")
+```
+
+## Step 5: Threshold Use Cases
+
+We are addressing a classification problem that involves predicting whether an individual is pregnant, where 1 represents pregnant (female) and 0 represents not pregnant (male). Accurate prediction of pregnancy status is important, as incorrect classifications can lead to unnecessary stress and potential downstream consequences for individuals. Considering the target variable is relatively balanced, overall accuracy is a reasonable performance metric. Under both classification thresholds, the model performs well. At a 0.2 threshold, the model achieves 91% accuracy, compared to 95% accuracy at the 0.8 threshold. Precision increases from 86% at the 0.2 threshold to 95% at the 0.8 threshold, indicating that the higher threshold results in fewer false positives. However, recall is more critical in this context, as failing to identify a true pregnancy represents a more consequential error than incorrectly flagging a non-pregnancy. At the 0.2 threshold, the model correctly identifies 95% of pregnancies, compared to 92% at the 0.8 threshold. While this difference may appear modest, it reflects a higher rate of false negatives when using the higher threshold. Although the F1 score is higher at the 0.8 threshold (94% versus 90%), the 0.2 threshold is preferred given the nature of the prediction task. Prioritizing recall minimizes the likelihood of missing true pregnancies, even at the cost of a higher number of false positives. In this setting, the 0.2 threshold provides a more appropriate balance that aligns with the practical implications of the model’s use.
+
 
