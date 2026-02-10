@@ -1,0 +1,17 @@
+---
+title: "Window Functions"
+author: "Robert Gomez, DrPH, MPH"
+format: html
+---
+
+# [**Approach**]{.underline}
+
+## Introduction
+
+The goal of this assignment is to use a Large Language Model (LLM) to generate artificial time series data in the health domain. This dataset will then be analyzed in R to calculate year-to-year averages and a six-day moving average for all relevant items.
+
+## Challenges
+
+Although I have used LLMs before, I have not applied them to create artificial datasets. I hope this will not be too challenging. If I am unsuccessful, I may need to find a free dataset as an alternative, which could delay my progress on the assignment.
+
+# [**Base Code**]{.underline}
