@@ -1,0 +1,17 @@
+---
+title: "Global Baseline Estimate"
+author: "Robert Gomez, DrPH, MPH"
+format: html
+---
+
+# [**Approach**]{.underline}
+
+## Introduction
+
+In this assignment, I will use previously collected movie rating data to develop a Global Baseline Estimate recommender system for recommending movies.
+
+## Challenges
+
+As with previous assignments, this is my first time working on this type of task, so the main challenge will be applying a new concept and approach.
+
+# [**Base Code**]{.underline}
