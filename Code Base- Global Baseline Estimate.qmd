@@ -1,0 +1,188 @@
+---
+title: "Global Baseline Estimate"
+author: "Robert Gomez, DrPH, MPH"
+format: html
+---
+
+# [**Approach**]{.underline}
+
+## Introduction
+
+In this assignment, I will use previously collected movie rating data to develop a Global Baseline Estimate recommender system for recommending movies.
+
+## Challenges
+
+As with previous assignments, this is my first time working on this type of task, so the main challenge will be applying a new concept and approach.
+
+# [**Base Code**]{.underline}
+
+## Loading packages
+
+```{r}
+pacman::p_load(DBI,
+               RPostgreSQL,
+               dbplyr,
+               tidyverse,
+               knitr
+                )
+```
+
+## Connecting to Database and Extracting Data
+
+```{r}
+#keyring::key_set("postgresql_pw")
+
+con <- DBI::dbConnect(
+  RPostgres::Postgres(),
+  host = "localhost",
+  port = 5432,
+  dbname = "postgres",
+  user = "postgres",
+  password = keyring::key_get("postgresql_pw")
+)
+
+dbListTables(con)
+
+movieratings_original <- dbReadTable(con, "movieratings")
+
+dbDisconnect(con)
+
+```
+
+## Transforming and Flagging Missing Data as NAs
+
+```{r}
+str(movieratings_original)
+
+movieratings <- movieratings_original %>%
+  mutate(avatar_fireandash = case_when(avatar_fireandash == "0 Stars" ~ 0,
+                                       avatar_fireandash == "1 Star" ~ 1,
+                                       avatar_fireandash == "2 Stars"~ 2,
+                                       avatar_fireandash == "3 Stars"~ 3,
+                                       avatar_fireandash == "4 Stars"~ 4,
+                                       avatar_fireandash == "5 Stars"~ 5,
+                                       TRUE ~ NA_real_),
+         greenland2 = case_when(greenland2 == "0 Stars" ~ 0,
+                                greenland2 == "1 Star" ~ 1,
+                                greenland2 == "2 Stars"~ 2,
+                                greenland2 == "3 Stars"~ 3,
+                                greenland2 == "4 Stars"~ 4,
+                                greenland2 == "5 Stars"~ 5,
+                                TRUE ~ NA_real_),
+         nuremberg = case_when(nuremberg == "0 Stars" ~ 0,
+                               nuremberg == "1 Star" ~ 1,
+                               nuremberg == "2 Stars"~ 2,
+                               nuremberg == "3 Stars"~ 3,
+                               nuremberg == "4 Stars"~ 4,
+                               nuremberg == "5 Stars"~ 5,
+                               TRUE ~ NA_real_),
+         predatorbadlands = case_when(predatorbadlands == "0 Stars" ~ 0,
+                                      predatorbadlands == "1 Star" ~ 1,
+                                      predatorbadlands == "2 Stars"~ 2,
+                                      predatorbadlands == "3 Stars"~ 3,
+                                      predatorbadlands == "4 Stars"~ 4,
+                                      predatorbadlands == "5 Stars"~ 5,
+                                      TRUE ~ NA_real_),
+         rentalfamily = case_when(rentalfamily == "0 Stars" ~ 0,
+                                  rentalfamily == "1 Star" ~ 1,
+                                  rentalfamily == "2 Stars"~ 2,
+                                  rentalfamily == "3 Stars"~ 3,
+                                  rentalfamily == "4 Stars"~ 4,
+                                  rentalfamily == "5 Stars"~ 5,
+                                  TRUE ~ NA_real_),
+         zootopia2 = case_when(zootopia2 == "0 Stars" ~ 0,
+                               zootopia2 == "1 Star" ~ 1,
+                               zootopia2 == "2 Stars"~ 2,
+                               zootopia2 == "3 Stars"~ 3,
+                               zootopia2 == "4 Stars"~ 4,
+                               zootopia2 == "5 Stars"~ 5,
+                               TRUE ~ NA_real_)
+         )
+```
+
+## Calculating Averages and Creating Table
+
+```{r}
+movietable <- movieratings %>%
+  mutate(user_avg = round(rowMeans(across(c(avatar_fireandash, greenland2, nuremberg, predatorbadlands, rentalfamily,
+                                             zootopia2)), na.rm = TRUE), 2)) %>%
+  select(fname, avatar_fireandash, greenland2, nuremberg, predatorbadlands, rentalfamily, zootopia2, user_avg)
+
+overall_avg <- movietable %>%
+  select(-fname, -user_avg) %>%
+  as.matrix() %>%
+  mean(na.rm = TRUE)
+
+movie_avg <- round(colMeans(select(movietable, c(avatar_fireandash, greenland2, nuremberg, predatorbadlands,
+                                                    rentalfamily, zootopia2)),na.rm = TRUE), 2) %>%
+  as_tibble_row()
+
+movie_avg <- movie_avg %>%
+  mutate(fname = "Movie Avg.",
+         user_avg = .env$overall_avg) %>%
+  select(fname, avatar_fireandash, greenland2, nuremberg, predatorbadlands, rentalfamily, zootopia2, user_avg)
+
+fname <- "Movie Avg. Difference"
+
+avatar_fireandash <- movie_avg$avatar_fireandash - overall_avg
+
+greenland2 <- movie_avg$greenland2 - overall_avg
+
+nuremberg <- movie_avg$nuremberg - overall_avg
+
+predatorbadlands <- movie_avg$predatorbadlands - overall_avg
+
+rentalfamily <- movie_avg$rentalfamily - overall_avg
+
+zootopia2 <- movie_avg$zootopia2 - overall_avg
+
+movie_avg_dif <- tibble(
+  fname = "Movie Avg. Difference",
+  avatar_fireandash = avatar_fireandash,
+  greenland2 = greenland2,
+  nuremberg = nuremberg,
+  predatorbadlands = predatorbadlands,
+  rentalfamily = rentalfamily,
+  zootopia2 = zootopia2,
+  overall_avg = overall_avg
+)
+
+final_movietable <- bind_rows(movietable, movie_avg, movie_avg_dif) %>%
+  mutate(user_avg_dif = user_avg - .env$overall_avg,
+    across(where(is.numeric), ~ round(.x, 2))) %>%
+  select(-overall_avg) %>%
+  rename(Critic = fname,
+         `Avatar Fire and Ash` = avatar_fireandash,
+         `Greenland 2` = greenland2,
+         Nuremberg = nuremberg,
+         `Predator Badlands` = predatorbadlands,
+         `Rental Family` = rentalfamily,
+         `Zoo Topia 2` = zootopia2,
+         `Critic Avg.` = user_avg,
+         `Critic Avg. Difference` = user_avg_dif)
+
+final_movietable[6, 9] <- NA
+
+print(
+  final_movietable %>%
+    mutate(across(where(is.numeric), ~ format(.x, nsmall = 2)))
+)
+
+kable(final_movietable, col.names = NA, row.names = NA, 
+      caption = "Global Baseline Estimate Table")
+
+```
+
+## Predicting and Recommending a Movie
+
+How would Oliver rate Nuremberg?
+
+```{r}
+print(overall_avg + nuremberg + final_movietable[2, 9])
+```
+How would Oliver rate Rental Family?
+
+```{r}
+print(overall_avg + rentalfamily + final_movietable[2, 9])
+```
+Based on the estimated ratings, Oliver would likely enjoy Family Rental more than Nuremberg.
