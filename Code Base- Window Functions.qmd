@@ -1,0 +1,134 @@
+---
+title: "Window Functions"
+author: "Robert Gomez, DrPH, MPH"
+format: html
+---
+
+# [**Approach**]{.underline}
+
+## Introduction
+
+The goal of this assignment is to use a Large Language Model (LLM) to generate artificial time series data in the health domain. This dataset will then be analyzed in R to calculate year-to-year averages and a six-day moving average for all relevant items.
+
+## Challenges
+
+Although I have used LLMs before, I have not applied them to create artificial datasets. I hope this will not be too challenging. If I am unsuccessful, I may need to find a free dataset as an alternative, which could delay my progress on the assignment.
+
+# [**Base Code**]{.underline}
+
+## LLM (MS COPILOT) Prompt and Output
+
+![](images/clipboard-2442478000.jpeg)
+
+![](images/clipboard-2566618667.jpeg)
+
+![](images/clipboard-3281223355.jpeg)
+
+## Loading Packages
+
+```{r}
+pacman::p_load(tidyverse,
+               zoo,
+               knitr)
+```
+
+## Importing Data
+
+```{r}
+rowing <- read.csv("./rowing_performance_dataset.csv")
+```
+
+## Transforming Data
+
+Calculating 6 day rolling averages for power in watts, stroke rate per minute, and distance in meters.
+
+```{r}
+rowing <- rowing %>%
+  mutate(rolling_power_watts = round(rollmean(power_watts, k = 6, align = "right",fill = NA), 1),
+         rolling_stroke_rate_spm = round(rollmean(stroke_rate_spm, k = 6, align = "right", fill = NA), 1),
+         rolling_distance_m = round(rollmean(distance_m, k = 6, align = "right", fill = NA), 1))
+
+kable(head(rowing, n = 25), caption = "Firt 25 Rows of the Rowing Dataset")
+```
+
+Calculating Year to date average for power in watts, stroke rate per minute, and distance in meters.
+
+```{r}
+rowing$date <- mdy(rowing$date)
+
+cutoff_date <- Sys.Date()
+
+ytd_rowing <- rowing %>%
+  filter(year(date) == year(cutoff_date) & yday(date) <= yday(cutoff_date))
+
+```
+
+Power in Watts
+
+```{r}
+ytd_power_watts <- round(mean(ytd_rowing$power_watts), 1)
+
+kable(ytd_power_watts, col.names = NULL, row.names = FALSE, 
+      caption = "Year-to-Date Average Power in Watts")
+
+```
+
+Stroke Rate Per Minute
+
+```{r}
+ytd_stroke_rate_spm <- round(mean(ytd_rowing$stroke_rate_spm), 1)
+
+kable(ytd_stroke_rate_spm, col.names = NULL, row.names = FALSE, 
+      caption = "Year-to-Date Average Stroke Rate Per Minute")
+
+```
+
+Distance in Meters
+
+```{r}
+ytd_distance_m <- round(mean(ytd_rowing$distance_m), 1)
+
+kable(ytd_distance_m, col.names = NULL, row.names = FALSE, 
+      caption = "Year-to-Date Average Distance in Meters")
+```
+
+## Visualizing 6-Day rolling average
+
+Power in Watts
+
+```{r}
+rowing %>%
+  filter(!is.na(date), !is.na(rolling_power_watts)) %>%
+  ggplot(aes(x = date, y = rolling_power_watts)) +
+  geom_line(color = "#2C7FB8", linewidth = 1) +
+  theme_minimal() +
+  labs(x = "Date",
+       y = "6-Day Rolling Average Power in Watts",
+       title = "6-Day Rolling Average Power Over Time")
+```
+
+Stroke Rate Per Minute
+
+```{r}
+rowing %>%
+  filter(!is.na(date), !is.na(rolling_stroke_rate_spm)) %>%
+  ggplot(aes(x = date, y = rolling_stroke_rate_spm)) +
+  geom_line(color = "#2C7FB8", linewidth = 1) +
+  theme_minimal() +
+  labs(x = "Date",
+       y = "6-Day Rolling Average Stroke Rate Per Minute",
+       title = "6-Day Rolling Average Stroke Rate Per Minute")
+```
+
+Distance in Meters
+
+```{r}
+rowing %>%
+  filter(!is.na(date), !is.na(rolling_distance_m)) %>%
+  ggplot(aes(x = date, y = rolling_distance_m)) +
+  geom_line(color = "#2C7FB8", linewidth = 1) +
+  theme_minimal() +
+  labs(x = "Date",
+       y = "6-Day Rolling Average Distance in Meters",
+       title = "6-Day Rolling Average Distance in Meters")
+```
